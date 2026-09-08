@@ -5,26 +5,53 @@ if (!GAS_URL) {
   console.warn('VITE_GAS_URL is not set. Add it to your .env / Netlify env vars.')
 }
 
-async function get(action, params = {}) {
-  const url = new URL(GAS_URL)
-  url.searchParams.set('action', action)
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
-  const res = await fetch(url.toString(), { method: 'GET' })
-  const data = await res.json()
+// Google's servers occasionally return a transient error (a blip, not a real
+// failure) instead of our JSON. Rather than surface a raw parsing error, we
+// quietly retry once before giving the user a plain-language message.
+const FRIENDLY_RETRY_ERROR = "That didn't go through — the connection to Google had a brief hiccup. Please try again."
+
+async function parseResponse(res) {
+  let data
+  try {
+    data = await res.json()
+  } catch {
+    throw new Error('__TRANSIENT__')
+  }
   if (!data.ok) throw new Error(data.error || 'Request failed')
   return data.result
 }
 
+async function withRetry(doRequest) {
+  try {
+    const res = await doRequest()
+    return await parseResponse(res)
+  } catch (e) {
+    if (e.message !== '__TRANSIENT__') throw e
+    // One quiet retry after a short pause, then a friendly message if it still fails.
+    await new Promise((r) => setTimeout(r, 800))
+    try {
+      const res = await doRequest()
+      return await parseResponse(res)
+    } catch {
+      throw new Error(FRIENDLY_RETRY_ERROR)
+    }
+  }
+}
+
+async function get(action, params = {}) {
+  const url = new URL(GAS_URL)
+  url.searchParams.set('action', action)
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
+  return withRetry(() => fetch(url.toString(), { method: 'GET' }))
+}
+
 async function post(action, body = {}) {
-  const res = await fetch(GAS_URL, {
+  return withRetry(() => fetch(GAS_URL, {
     method: 'POST',
     // text/plain avoids a CORS preflight against the Apps Script endpoint
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ action, ...body }),
-  })
-  const data = await res.json()
-  if (!data.ok) throw new Error(data.error || 'Request failed')
-  return data.result
+  }))
 }
 
 export const api = {
