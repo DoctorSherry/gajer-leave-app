@@ -10,7 +10,7 @@
  */
 
 const ALLOWED_DOMAIN = 'thegajerpractice.com';
-const APP_URL = 'https://YOUR-NETLIFY-SITE.netlify.app'; // <-- set after first Netlify deploy
+const APP_URL = 'https://gajer-leave-app.netlify.app'; // <-- set after first Netlify deploy
 // No shared default leave balance — each person's LeaveBalance is set
 // individually in the Employees sheet (see Setup.gs / README).
 // There's no single ADMIN_EMAIL constant — admins are whoever has Role
