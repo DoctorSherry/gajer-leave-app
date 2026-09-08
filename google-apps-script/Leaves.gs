@@ -120,8 +120,8 @@ function handleCancelLeave(body) {
 
   sendPlainEmail(
     [leave.EmployeeEmail, leave.ProxyEmail, ...adminEmails()],
-    `Leave cancelled: ${leave.EmployeeName} (${leave.StartDate} – ${leave.EndDate})`,
-    `${leave.EmployeeName}'s leave request for ${leave.StartDate} to ${leave.EndDate} has been cancelled. ` +
+    `Leave cancelled: ${leave.EmployeeName} (${fmtDate(leave.StartDate)} – ${fmtDate(leave.EndDate)})`,
+    `${leave.EmployeeName}'s leave request for ${fmtDate(leave.StartDate)} to ${fmtDate(leave.EndDate)} has been cancelled. ` +
     `${leave.ProxyName} is no longer needed as proxy for these dates.`
   );
 
@@ -142,8 +142,8 @@ function handleApproveLeave(body) {
 
   sendPlainEmail(
     [leave.EmployeeEmail, leave.ProxyEmail],
-    `Leave approved: ${leave.StartDate} – ${leave.EndDate}`,
-    `${leave.EmployeeName}'s leave for ${leave.StartDate} to ${leave.EndDate} has been approved.\n` +
+    `Leave approved: ${fmtDate(leave.StartDate)} – ${fmtDate(leave.EndDate)}`,
+    `${leave.EmployeeName}'s leave for ${fmtDate(leave.StartDate)} to ${fmtDate(leave.EndDate)} has been approved.\n` +
     `${leave.ProxyName} will be covering ${leave.EmployeeName}'s responsibilities during this time.`
   );
 
@@ -163,8 +163,8 @@ function handleRejectLeave(body) {
 
   sendPlainEmail(
     [leave.EmployeeEmail],
-    `Leave request not approved: ${leave.StartDate} – ${leave.EndDate}`,
-    `Your leave request for ${leave.StartDate} to ${leave.EndDate} was not approved.` +
+    `Leave request not approved: ${fmtDate(leave.StartDate)} – ${fmtDate(leave.EndDate)}`,
+    `Your leave request for ${fmtDate(leave.StartDate)} to ${fmtDate(leave.EndDate)} was not approved.` +
     (note ? `\n\nNote: ${note}` : '')
   );
 

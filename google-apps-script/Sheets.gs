@@ -59,6 +59,14 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+/** Formats a stored date (Date object or yyyy-mm-dd string) as "15 Sept 2026" for emails/messages. */
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = (d instanceof Date) ? d : new Date(d);
+  if (isNaN(dt.getTime())) return String(d);
+  return Utilities.formatDate(dt, Session.getScriptTimeZone() || 'Etc/UTC', 'd MMM yyyy');
+}
+
 function newId(prefix) {
   return prefix + '_' + Utilities.getUuid().slice(0, 8);
 }

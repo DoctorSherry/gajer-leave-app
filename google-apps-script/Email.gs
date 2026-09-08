@@ -12,7 +12,7 @@ function sendProxyRequestEmail({ id, token, employeeName, proxyEmail, proxyName,
   const base = scriptWebAppUrl();
   const acceptUrl = `${base}?action=proxyRespond&id=${id}&token=${token}&response=accept`;
   const declineUrl = `${base}?action=proxyRespond&id=${id}&token=${token}&response=decline`;
-  const when = halfDay ? `${startDate} (half day)` : `${startDate} – ${endDate}`;
+  const when = halfDay ? `${fmtDate(startDate)} (half day)` : `${fmtDate(startDate)} – ${fmtDate(endDate)}`;
 
   const subject = `Proxy request: cover for ${employeeName}, ${when}`;
   const body =
@@ -34,12 +34,12 @@ ${reason ? 'Note from ' + employeeName + ': ' + reason + '\n\n' : ''}This reques
 }
 
 function notifyConflict(newLeave, conflicts) {
-  const names = conflicts.map((c) => `${c.employeeName} (${c.startDate}–${c.endDate})`).join(', ');
+  const names = conflicts.map((c) => `${c.employeeName} (${fmtDate(c.startDate)}–${fmtDate(c.endDate)})`).join(', ');
   const recipients = [...adminEmails(), ...conflicts.map((c) => c.employeeEmail)];
   sendPlainEmail(
     recipients,
-    `Overlapping leave: ${newLeave.employeeName}, ${newLeave.startDate}–${newLeave.endDate}`,
-    `${newLeave.employeeName} just requested leave for ${newLeave.startDate} to ${newLeave.endDate}, ` +
+    `Overlapping leave: ${newLeave.employeeName}, ${fmtDate(newLeave.startDate)}–${fmtDate(newLeave.endDate)}`,
+    `${newLeave.employeeName} just requested leave for ${fmtDate(newLeave.startDate)} to ${fmtDate(newLeave.endDate)}, ` +
     `which overlaps with existing leave for: ${names}.\n\n` +
     `Flagging so staffing can be double-checked before this is approved.`
   );
@@ -64,17 +64,17 @@ function handleProxyRespondLink(e) {
     logAudit(leave.ProxyEmail, 'ProxyAccept', id, '');
     sendPlainEmail(
       adminEmails(),
-      `Ready for approval: ${leave.EmployeeName}, ${leave.StartDate}–${leave.EndDate}`,
+      `Ready for approval: ${leave.EmployeeName}, ${fmtDate(leave.StartDate)}–${fmtDate(leave.EndDate)}`,
       `${leave.ProxyName} accepted the proxy request for ${leave.EmployeeName}'s leave ` +
-      `(${leave.StartDate} to ${leave.EndDate}). It now needs approval in the app.`
+      `(${fmtDate(leave.StartDate)} to ${fmtDate(leave.EndDate)}). It now needs approval in the app.`
     );
     sendPlainEmail(
       [leave.EmployeeEmail],
       `${leave.ProxyName} accepted your proxy request`,
-      `${leave.ProxyName} has agreed to cover for you from ${leave.StartDate} to ${leave.EndDate}. ` +
+      `${leave.ProxyName} has agreed to cover for you from ${fmtDate(leave.StartDate)} to ${fmtDate(leave.EndDate)}. ` +
       `Your request has been sent for final approval.`
     );
-    return htmlOut(`Thanks — you're confirmed as proxy for ${leave.EmployeeName} (${leave.StartDate} to ${leave.EndDate}). A practice admin has been notified for final approval.`);
+    return htmlOut(`Thanks — you're confirmed as proxy for ${leave.EmployeeName} (${fmtDate(leave.StartDate)} to ${fmtDate(leave.EndDate)}). A practice admin has been notified for final approval.`);
   }
 
   if (response === 'decline') {
@@ -83,7 +83,7 @@ function handleProxyRespondLink(e) {
     sendPlainEmail(
       [leave.EmployeeEmail, ...adminEmails()],
       `${leave.ProxyName} declined your proxy request`,
-      `${leave.ProxyName} isn't able to cover for you on ${leave.StartDate} to ${leave.EndDate}. ` +
+      `${leave.ProxyName} isn't able to cover for you on ${fmtDate(leave.StartDate)} to ${fmtDate(leave.EndDate)}. ` +
       `Please open the app and submit a new request with a different proxy.`
     );
     return htmlOut(`Got it — you've declined this proxy request. ${leave.EmployeeName} and the practice admins have been notified.`);
