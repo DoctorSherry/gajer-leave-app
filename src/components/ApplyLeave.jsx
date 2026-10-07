@@ -13,7 +13,9 @@ export default function ApplyLeave({ employees, leaves, holidays, user, onDone, 
   const [reason, setReason] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const proxyOptions = employees.filter((d) => d.email !== user.email && d.role !== 'admin')
+  // Admins can be selected as a covering colleague too (e.g. picking someone
+  // as a placeholder when no real coverage is needed) — just not yourself.
+  const proxyOptions = employees.filter((d) => d.email !== user.email)
 
   const conflicts = useMemo(() => {
     if (!startDate || !endDate) return []
